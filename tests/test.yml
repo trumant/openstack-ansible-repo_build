@@ -13,15 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Wheel building
-- include: repo_clone_git.yml
-- include: repo_build_install.yml
-- include: repo_set_facts.yml
-- include: repo_pre_build.yml
-- include: repo_build.yml
-- include: repo_post_build.yml
-
-# Venv building
-- include: repo_venv.yml
-  tags:
-    - repo-build-venvs
+- name: Playbook for role testing
+  hosts: localhost
+  connection: local
+  roles:
+    - role: "{{ rolename | basename }}"

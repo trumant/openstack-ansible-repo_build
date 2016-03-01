@@ -1,5 +1,5 @@
 ---
-# Copyright 2015, Rackspace US, Inc.
+# Copyright 2016, Rackspace US, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,15 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Wheel building
-- include: repo_clone_git.yml
-- include: repo_build_install.yml
-- include: repo_set_facts.yml
-- include: repo_pre_build.yml
-- include: repo_build.yml
-- include: repo_post_build.yml
 
-# Venv building
-- include: repo_venv.yml
+- name: Install pip packages
+  pip:
+    name: "{{ item }}"
+    state: present
+    extra_args: "--constraint {{ repo_build_git_dir }}/requirements/upper-constraints.txt {{ pip_install_options|default('') }}"
+  register: install_packages
+  until: install_packages|success
+  retries: 5
+  delay: 5
+  with_items: repo_pip_packages
   tags:
-    - repo-build-venvs
+    - repo-pip-packages
+
