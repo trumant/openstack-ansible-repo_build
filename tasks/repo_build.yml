@@ -17,7 +17,6 @@
   shell: |
     pip wheel --timeout {{ repo_build_timeout }} \
               --wheel-dir {{ repo_build_output }} \
-              --allow-all-external \
               --find-links {{ repo_build_global_links_path }} \
               --constraint {{ repo_build_release_path }}/{{ repo_build_release_tag }}/requirements_constraints.txt \
               --index-url {{ repo_build_pip_default_index }} \
@@ -34,7 +33,6 @@
   shell: |
     pip wheel --timeout {{ repo_build_timeout }} \
               --wheel-dir {{ repo_build_output }} \
-              --allow-all-external \
               --find-links {{ repo_build_output }} \
               --constraint {{ repo_build_release_path }}/{{ repo_build_release_tag }}/requirements_constraints.txt \
               --index-url {{ repo_build_pip_default_index }} \
