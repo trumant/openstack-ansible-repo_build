@@ -13,8 +13,56 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-- name: Playbook for role testing
-  hosts: localhost
+# Run basic prep
+- include: test-prep.yml
+
+# Run container clean up and build
+- include: test-container-create.yml
+
+- name: Playbook for repo-build role testing
+  hosts: repo_all
   connection: local
+  user: root
+  pre_tasks:
+    - name: Set local packages fact
+      set_fact:
+        local_packages:
+          results: [
+            {
+              "item": {
+                "packages": [
+                  "aodh",
+                ],
+                "remote_package_parts": [
+                  {
+                    "url": "https://git.openstack.org/openstack/aodh",
+                    "version": "239e1f629b26557ceadb92de3d62edcd87489b9d",
+                    "name": "aodh",
+                    "fragment": null,
+                    "original": "git+https://git.openstack.org/openstack/aodh@239e1f629b26557ceadb92de3d62edcd87489b9d#egg=aodh&gitname=aodh",
+                    "egg_name": "aodh"
+                  },
+                  {
+                    "url": "https://git.openstack.org/openstack/requirements",
+                    "version": "332278d456e06870150835564342570ec9d5f5a0",
+                    "name": "requirements",
+                    "fragment": null,
+                    "original": "git+https://git.openstack.org/openstack/requirements@332278d456e06870150835564342570ec9d5f5a0#egg=requirements&gitname=requirements",
+                    "egg_name": "requirements"
+                  }
+                ],
+                "remote_packages": [
+                  "git+https://git.openstack.org/openstack/requirements@332278d456e06870150835564342570ec9d5f5a0#egg=requirements&gitname=requirements",
+                  "git+https://git.openstack.org/openstack/aodh@239e1f629b26557ceadb92de3d62edcd87489b9d#egg=aodh&gitname=aodh"
+                ],
+                "role_packages": {
+                }
+              }
+            }
+          ]
+
+
+
   roles:
+    - role: "repo_server"
     - role: "{{ rolename | basename }}"

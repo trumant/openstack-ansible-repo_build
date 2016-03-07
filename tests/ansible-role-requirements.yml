@@ -6,3 +6,19 @@
   src: https://git.openstack.org/openstack/openstack-ansible-pip_install
   scm: git
   version: master
+- name: py_from_git
+  src: https://git.openstack.org/openstack/openstack-ansible-py_from_git
+  scm: git
+  version: master
+- name: lxc_hosts
+  src: https://git.openstack.org/openstack/openstack-ansible-lxc_hosts
+  scm: git
+  version: master
+- name: lxc_container_create
+  src: https://git.openstack.org/openstack/openstack-ansible-lxc_container_create
+  scm: git
+  version: master
+- name: repo_server
+  src: https://git.openstack.org/openstack/openstack-ansible-repo_server
+  scm: git
+  version: master
