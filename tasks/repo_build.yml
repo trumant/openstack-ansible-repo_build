@@ -21,8 +21,10 @@
               --constraint {{ repo_build_release_path }}/{{ repo_build_release_tag }}/requirements_constraints.txt \
               --index-url {{ repo_build_pip_default_index }} \
               --trusted-host {{ repo_build_pip_default_index | netloc_no_port }} \
-              --extra-index-url {{ repo_build_pip_extra_index }} \
-              --trusted-host {{ repo_build_pip_extra_index | netloc_no_port }} \
+              {% if repo_build_pip_extra_index is defined %}--extra-index-url {{ repo_build_pip_extra_index }} \
+              --trusted-host {{ repo_build_pip_extra_index | netloc_no_port }} \{% endif %}
+              --extra-index-url {{ repo_build_pip_extra_indexes | join(' --extra-index-url ') }} \
+              --trusted-host {{ repo_build_pip_extra_indexes | map('netloc_no_port') | join(' --trusted-host ') }} \
               --build {{ repo_build_dir }} \
               --log /var/log/repo/repo_builder.log \
               --requirement {{ repo_build_release_path }}/{{ repo_build_release_tag }}/requirements_global_requirements.txt
@@ -37,8 +39,10 @@
               --constraint {{ repo_build_release_path }}/{{ repo_build_release_tag }}/requirements_constraints.txt \
               --index-url {{ repo_build_pip_default_index }} \
               --trusted-host {{ repo_build_pip_default_index | netloc_no_port }} \
-              --extra-index-url {{ repo_build_pip_extra_index }} \
-              --trusted-host {{ repo_build_pip_extra_index | netloc_no_port }} \
+              {% if repo_build_pip_extra_index is defined %}--extra-index-url {{ repo_build_pip_extra_index }} \
+              --trusted-host {{ repo_build_pip_extra_index | netloc_no_port }} \{% endif %}
+              --extra-index-url {{ repo_build_pip_extra_indexes | join(' --extra-index-url ') }} \
+              --trusted-host {{ repo_build_pip_extra_indexes | map('netloc_no_port') | join(' --trusted-host ') }} \
               --build {{ repo_build_dir }} \
               --log /var/log/repo/repo_builder.log \
               --requirement {{ repo_build_release_path }}/{{ repo_build_release_tag }}/requirements_local_filtered.txt

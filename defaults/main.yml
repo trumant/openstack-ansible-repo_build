@@ -27,7 +27,11 @@ repo_build_pool_dir: "/var/www/repo/pools"
 repo_build_release_tag: "untagged"
 
 repo_build_pip_default_index: "https://pypi.python.org/simple"
-repo_build_pip_extra_index: "https://pypi.python.org/simple"
+repo_build_pip_extra_indexes:
+  - "https://pypi.python.org/simple"
+# TODO(odyssey4me): Deprecate this var for Mitaka & mark for removal
+#                   in Newton.
+# repo_build_pip_extra_index: "https://pypi.python.org/simple"
 
 repo_build_timeout: 120
 
