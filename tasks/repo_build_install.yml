@@ -13,17 +13,41 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+- name: Drop lxc-net override file
+  template:
+    src: manual-init.override.j2
+    dest: /etc/init/lxc-net.override
+    owner: root
+    group: root
+    mode: 0644
+  tags:
+    - repo-build-apt-packages
 
-- name: Install pip packages
-  pip:
-    name: "{{ item }}"
+#TODO(evrardjp): Replace the next 2 tasks by a standard apt with cache
+#when https://github.com/ansible/ansible-modules-core/pull/1517 is merged
+#in 1.9.x or we move to 2.0 (if tested working)
+- name: Check apt last update file
+  stat:
+    path: /var/cache/apt
+  register: apt_cache_stat
+  tags:
+    - repo-build-apt-packages
+
+- name: Update apt if needed
+  apt:
+    update_cache: yes
+  when: "ansible_date_time.epoch|float - apt_cache_stat.stat.mtime > {{cache_timeout}}"
+  tags:
+    - repo-build-apt-packages
+
+- name: Install apt packages
+  apt:
+    pkg: "{{ item }}"
     state: present
-    extra_args: "--constraint {{ repo_build_git_dir }}/requirements/upper-constraints.txt {{ pip_install_options|default('') }}"
   register: install_packages
   until: install_packages|success
   retries: 5
-  delay: 5
-  with_items: repo_pip_packages
+  delay: 2
+  with_items: repo_build_apt_packages
   tags:
-    - repo-pip-packages
-
+    - repo-build-apt-packages
