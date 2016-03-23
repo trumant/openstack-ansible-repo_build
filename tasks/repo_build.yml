@@ -18,6 +18,7 @@
     pip wheel --timeout {{ repo_build_timeout }} \
               --wheel-dir {{ repo_build_output }} \
               --find-links {{ repo_build_global_links_path }} \
+              --find-links {{ repo_build_output }} \
               --constraint {{ repo_build_release_path }}/{{ repo_build_release_tag }}/requirements_constraints.txt \
               --index-url {{ repo_build_pip_default_index }} \
               --trusted-host {{ repo_build_pip_default_index | netloc_no_port }} \
@@ -30,11 +31,13 @@
               --requirement {{ repo_build_release_path }}/{{ repo_build_release_tag }}/requirements_global_requirements.txt
   tags:
     - repo-build-global-requirement-wheels
+    - repo-build-openstack-ansible-requirement-wheels
 
 - name: Create OpenStack-Ansible requirement wheels
   shell: |
     pip wheel --timeout {{ repo_build_timeout }} \
               --wheel-dir {{ repo_build_output }} \
+              --find-links {{ repo_build_global_links_path }} \
               --find-links {{ repo_build_output }} \
               --constraint {{ repo_build_release_path }}/{{ repo_build_release_tag }}/requirements_constraints.txt \
               --index-url {{ repo_build_pip_default_index }} \
@@ -47,4 +50,5 @@
               --log /var/log/repo/repo_builder.log \
               --requirement {{ repo_build_release_path }}/{{ repo_build_release_tag }}/requirements_local_filtered.txt
   tags:
+    - repo-build-local-requirement-wheels
     - repo-build-openstack-ansible-requirement-wheels

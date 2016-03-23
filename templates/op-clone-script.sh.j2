@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+set -ve
+
+# Clone a git repository / Update git repository.
+function git_clone {
+    repo="$1"
+    dest="$2"
+    version="$3"
+
+    # If the git repository directory is locally found the function will ensure the remote
+    #  is available within the repository. If the remote is not already in the local repository
+    #  the repository URL will be hashed and the first 7 charactors of the hash will be used for
+    #  remote name. Once the remotes are satisfied all refs will be fetched.
+    if [ -d "$dest/.git" ];then
+        pushd $dest
+            if ! git remote -v | grep -q "$repo"; then
+                remote_hash=$(echo "$repo" | sha1sum | awk '{print $1}')
+                git remote add ${remote_hash:0:7} "$repo"
+            fi
+            git fetch --all
+        popd
+
+    # If the local target directory is not a valid git repository it will be removed and cloned.
+    elif [ -d "$dest" ];then
+        rm -rf "$dest"
+        git clone "$repo" "$dest"
+    else  # If the local target directory does not exist it will be cloned.
+        git clone "$repo" "$dest"
+    fi
+
+    # The version passed to the function will be checked out.
+    pushd "$dest"
+      git checkout $version
+    popd
+}
+
+PID=()
+# Run the git clone. This will loop over all of the package parts and clone all known repositories.
+#  Clone ops are done in parallel at a count of the known "ansible_processor_count" or using a default of 5.
+{% for item in local_packages.results.0.item.remote_package_parts %}
+git_clone "{{ item['url'] }}" "{{ repo_build_git_dir }}/{{ item['name'] }}" "{{ item['version'] }}" &
+pid[{{ loop.index }}]=$!
+{% if loop.index is divisibleby(repo_build_concurrency | int) or loop.last %}
+for job_pid in ${!pid[@]}; do
+    wait ${pid[$job_pid]} || exit 99
+done
+
+{% endif %}
+{% endfor %}

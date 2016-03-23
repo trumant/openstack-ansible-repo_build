@@ -39,9 +39,41 @@
     - repo-set-requirement-names
     - repo-set-requirements
 
+- name: Set stripped global requirement names
+  set_fact:
+    global_requirement_names_stripped: "{% for req in global_requirement_names %}{{ req.split('#')[0].strip().replace('-', '_') }}{% if not loop.last %}||{% endif %}{% endfor %}"
+  tags:
+    - repo-set-requirement-names-filtered
+    - repo-set-requirement-names
+    - repo-set-requirements
+
+- name: Set stripped local requirement names
+  set_fact:
+    local_requirement_names_stripped: "{% for req in local_packages.results.0.item.packages %}{{ req.split('#')[0].strip().replace('-', '_') }}{% if not loop.last %}||{% endif %}{% endfor %}"
+  tags:
+    - repo-set-requirement-names-filtered
+    - repo-set-requirement-names
+    - repo-set-requirements
+
+- name: Set global normalized requirement names
+  set_fact:
+    global_requirement_normalized: "{{ global_requirement_names_stripped.split('||') }}"
+  tags:
+    - repo-set-requirement-names-filtered
+    - repo-set-requirement-names
+    - repo-set-requirements
+
+- name: Set local normalized requirement names
+  set_fact:
+    local_requirement_normalized: "{{ local_requirement_names_stripped.split('||') }}"
+  tags:
+    - repo-set-requirement-names-filtered
+    - repo-set-requirement-names
+    - repo-set-requirements
+
 - name: Set filtered requirement names
   set_fact:
-    global_requirement_names_filtered: "{{ local_packages.results.0.item.packages | filtered_list(global_requirement_names) }}"
+    global_requirement_names_filtered: "{{ local_requirement_normalized | filtered_list(global_requirement_normalized) }}"
   tags:
     - repo-set-requirement-names-filtered
     - repo-set-requirements
@@ -65,7 +97,7 @@
 
 - name: Set upper constraints
   set_fact:
-    upper_constraints: "{{ _upper_constraints | pip_constraint_update(local_packages.results.0.item.packages) }}"
+    upper_constraints: "{{ _upper_constraints | pip_constraint_update(local_requirement_normalized) }}"
   when: slurp_upper_constraints | success
   tags:
     - repo-set-constraints

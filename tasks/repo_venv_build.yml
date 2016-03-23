@@ -53,54 +53,24 @@
   tags:
     - repo-create-venv
 
-- name: Create role based venv
-  pip:
-    name: "{{ item.value | join(' ') }}"
-    state: present
-    virtualenv: "{{ repo_build_venv_build_dir }}/venvs/{{ item.key | replace('os_', '') }}"
-    virtualenv_site_packages: "no"
-    virtualenv_command: "{{ repo_build_venv_command_options }}"
-    extra_args: "{{ repo_build_venv_pip_install_options }}"
-  register: install_packages
-  until: install_packages|success
-  retries: 5
-  delay: 2
-  with_dict: local_packages.results.0.item.role_packages
-  when:
-    - '"os_" in item.key'
-    - "'{{ item.key | replace('os_', '') }}-{{ repo_build_release_tag }}.tgz' not in existing_venvs"
+- name: Create venv process script
+  template:
+    src: "op-venv-script.sh.j2"
+    dest: "/opt/op-venv-script.sh"
   tags:
     - repo-create-venv
 
-- name: Create venv archive
-  shell: |
-    # This is to clean up pyc files which makes the archived venv smaller
-    #  TODO(cloudnull) This should use the find module when we move to Ansible 2.0
-    find "{{ repo_build_venv_build_dir }}/venvs/{{ item.key | replace('os_', '') }}" -name '*.pyc' -delete
-    # Create archive
-    tar czf "{{ item.key | replace('os_', '') }}-{{ repo_build_release_tag }}.tgz" \
-        -C "{{ repo_build_venv_build_dir }}/venvs/{{ item.key | replace('os_', '') }}" .
-  args:
-    chdir: "{{ repo_build_venv_dir }}/{{ repo_build_release_tag }}/{{ ansible_distribution | lower }}"
-    creates: "{{ repo_build_venv_dir }}/{{ repo_build_release_tag }}/{{ ansible_distribution | lower }}/{{ item.key | replace('os_', '') }}-{{ repo_build_release_tag }}.tgz"
-  with_dict: local_packages.results.0.item.role_packages
-  when:
-    - '"os_" in item.key'
+- name: Run venv process script
+  shell: "bash /opt/op-venv-script.sh"
   tags:
-    - skip_ansible_lint
+    - repo-create-venv
     - repo-venv-compress-archive
     - repo-create-venv-archive
-    - repo-create-venv
-
-- name: Create venv archive checksum
-  shell: >
-    sha1sum "{{ item.key | replace('os_', '') }}-{{ repo_build_release_tag }}.tgz" | awk '{print $1}' > "{{ item.key | replace('os_', '') }}-{{ repo_build_release_tag }}.checksum"
-  args:
-    chdir: "{{ repo_build_venv_dir }}/{{ repo_build_release_tag }}/{{ ansible_distribution | lower }}"
-    creates: "{{ repo_build_venv_dir }}/{{ repo_build_release_tag }}/{{ ansible_distribution | lower }}/{{ item.key | replace('os_', '') }}-{{ repo_build_release_tag }}.checksum"
-  with_dict: local_packages.results.0.item.role_packages
-  when:
-    - '"os_" in item.key'
-  tags:
     - repo-create-venv-checksum
+
+- name: Remove venv process script
+  file:
+    path: "/opt/op-venv-script.sh"
+    state: absent
+  tags:
     - repo-create-venv

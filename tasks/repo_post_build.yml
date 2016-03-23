@@ -24,44 +24,24 @@
     - repo-create-links-index
     - repo-create-release-manifest
 
-- name: Create wheel pool structure
-  file:
-    path: "{{ repo_build_pool_dir }}/{{ item.split('-')[0] | lower }}"
-    state: directory
-    owner: "{{ repo_build_service_user_name }}"
-  with_items: built_wheels.stdout_lines
+- name: Create release process script
+  template:
+    src: "op-release-script.sh.j2"
+    dest: "/opt/op-release-script.sh"
   tags:
     - repo-create-pool
 
-- name: Remove pool indexes if found
+- name: Run release process script
+  shell: "bash /opt/op-release-script.sh"
+  tags:
+    - repo-create-pool
+
+- name: Remove release process script
   file:
-    path: "{{ repo_build_pool_dir }}/{{ item.split('-')[0] | lower }}/index.html"
+    path: "/opt/op-clone-script.sh"
     state: absent
-  with_items: built_wheels.stdout_lines
   tags:
     - repo-create-pool
-
-- name: Move wheels into place and ensure permissions
-  shell: |
-    if [ ! -f "{{ repo_build_pool_dir }}/{{ item.split('-')[0] | lower }}/{{ item | lower }}" ];then
-      mv {{ repo_build_output }}/{{ item }} {{ repo_build_pool_dir }}/{{ item.split('-')[0] | lower }}/{{ item | lower }}
-    elif ! diff {{ repo_build_output }}/{{ item }} {{ repo_build_pool_dir }}/{{ item.split('-')[0] | lower }}/{{ item | lower }} > /dev/null;then
-      mv {{ repo_build_output }}/{{ item }} {{ repo_build_pool_dir }}/{{ item.split('-')[0] | lower }}/{{ item | lower }}
-    fi
-    chown {{ repo_build_service_user_name }} {{ repo_build_pool_dir }}/{{ item.split('-')[0] | lower }}/{{ item | lower }}
-  with_items: built_wheels.stdout_lines
-  tags:
-    - repo-copy-wheels-to-pool
-
-- name: Create release pool links
-  file:
-    dest: "{{ repo_build_release_path }}/{{ repo_build_release_tag }}/{{ item | lower }}"
-    src: "{{ repo_build_pool_dir }}/{{ item.split('-')[0] | lower }}/{{ item | lower }}"
-    state: link
-    owner: "{{ repo_build_service_user_name }}"
-  with_items: built_wheels.stdout_lines
-  tags:
-    - repo-create-release-links
 
 - name: Create release manifest
   template:
@@ -90,16 +70,6 @@
     dest: "{{ repo_build_release_path }}/{{ repo_build_release_tag }}/index.html"
   tags:
     - repo-create-release-index
-
-- name: Create general index links
-  file:
-    dest: "{{ repo_build_global_links_path }}/{{ item | lower }}"
-    src: "../pools/{{ item.split('-')[0] | lower }}/{{ item | lower }}"
-    state: link
-    owner: "{{ repo_build_service_user_name }}"
-  with_items: built_wheels.stdout_lines
-  tags:
-    - repo-create-links-index
 
 - name: Index general links
   command: "ls -1 {{ repo_build_global_links_path }}"
