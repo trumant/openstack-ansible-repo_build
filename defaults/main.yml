@@ -58,7 +58,6 @@ repo_build_pip_extra_indexes:
 
 repo_build_timeout: 120
 
-repo_build_venv_force_rebuild: false
 repo_build_venv_build_dir: "/tmp/openstack-venv-builder"
 repo_build_venv_dir: "/var/www/repo/venvs"
 repo_build_venv_pip_install_options: >

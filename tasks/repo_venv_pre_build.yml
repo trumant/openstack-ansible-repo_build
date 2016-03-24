@@ -28,7 +28,6 @@
   file:
     path: "{{ repo_build_venv_dir }}/{{ repo_build_release_tag }}/{{ ansible_distribution | lower }}"
     state: "absent"
-  when: repo_build_venv_force_rebuild | bool
   tags:
     - repo-create-venv-location
     - repo-venv-compress-archive
