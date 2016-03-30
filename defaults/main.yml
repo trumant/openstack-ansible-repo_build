@@ -49,9 +49,13 @@ repo_build_apt_packages:
   - python-dev
   - swig
 
-repo_build_pip_default_index: "https://pypi.python.org/simple"
-repo_build_pip_extra_indexes:
-  - "https://pypi.python.org/simple"
+# Optionally set this to change the default index from pypi to an alternative
+#repo_build_pip_default_index: "https://pypi.python.org/simple"
+
+# Optionally set this to a list of extra indexes to be used when building wheels
+#repo_build_pip_extra_indexes:
+#  - "https://pypi.python.org/simple"
+
 # TODO(odyssey4me): Deprecate this var for Mitaka & mark for removal
 #                   in Newton.
 # repo_build_pip_extra_index: "https://pypi.python.org/simple"
