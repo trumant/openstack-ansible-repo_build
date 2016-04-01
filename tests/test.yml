@@ -496,3 +496,4 @@
     - role: "{{ rolename | basename }}"
   vars:
     openstack_release: testing
+    galera_client_drop_config_file: false
